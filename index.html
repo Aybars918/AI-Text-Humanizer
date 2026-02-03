@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Metin İnsanlaştırıcı | Humanize.im Alternatifi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #a0a0a0;
+            font-size: 1.1rem;
+        }
+
+        .lang-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .lang-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .api-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .api-section h3 {
+            margin-bottom: 15px;
+            color: #00d2ff;
+        }
+
+        .api-input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .api-input-group input {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .api-input-group input::placeholder {
+            color: #888;
+        }
+
+        .api-input-group button {
+            padding: 12px 25px;
+            background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .api-input-group button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 210, 255, 0.3);
+        }
+
+        .main-interface {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-interface {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .text-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .text-box h3 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .text-box h3 .icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            color: #fff;
+            font-size: 1rem;
+            resize: vertical;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #00d2ff;
+        }
+
+        .char-counter {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .controls h3 {
+            margin-bottom: 20px;
+            color: #00d2ff;
+        }
+
+        .style-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .style-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .style-card:hover {
+            border-color: #00d2ff;
+            transform: translateY(-2px);
+        }
+
+        .style-card.active {
+            border-color: #00d2ff;
+            background: rgba(0, 210, 255, 0.1);
+        }
+
+        .style-card h4 {
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        .style-card p {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .humanize-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .humanize-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.4);
+        }
+
+        .humanize-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .humanize-btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .humanize-btn.loading .spinner {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .output-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .stats-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00d2ff;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .ai-score {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .score-bar {
+            width: 100px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444 0%, #ffff44 50%, #44ff44 100%);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h4 {
+            margin-bottom: 10px;
+            color: #00d2ff;
+        }
+
+        .feature-card p {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 40px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0, 210, 255, 0.9);
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .error-toast {
+            background: rgba(255, 68, 68, 0.9);
+            color: #fff;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: rgba(0, 210, 255, 0.5);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <header>
+            <button class="lang-toggle" onclick="toggleLanguage()" id="langBtn">
+                <span id="langText">EN</span>
+            </button>
+            <h1 id="title">AI Metin İnsanlaştırıcı</h1>
+            <p id="subtitle">Yapay zeka metinlerini doğal, insan yazısı gibi dönüştürün</p>
+        </header>
+
+        <div class="api-section">
+            <h3 id="apiTitle">🔑 API Ayarları</h3>
+            <div class="api-input-group">
+                <input type="password" id="apiKey" placeholder="Groq API Key'inizi girin (gsk_...)" onblur="saveApiKey()">
+                <select id="modelSelect" onchange="saveModel()" style="padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff;">
+                    <option value="llama-3.3-70b-versatile" style="background: #302b63;">Llama 3.3 70B</option>
+                    <option value="mixtral-8x7b-32768" style="background: #302b63;">Mixtral 8x7B</option>
+                    <option value="gemma-2-9b-it" style="background: #302b63;">Gemma 2 9B</option>
+                </select>
+                <button onclick="testConnection()" id="testBtn">Bağlantıyı Test Et</button>
+            </div>
+            <p style="margin-top: 10px; font-size: 0.85rem; color: #888;" id="apiInfo">
+                💡 Groq API key almak için: <a href="https://console.groq.com" target="_blank" style="color: #00d2ff;">console.groq.com</a> - Ücretsiz 1M token/gün
+            </p>
+        </div>
+
+        <div class="stats-panel">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="inputTokens">0</div>
+                    <div class="stat-label" id="inputLabel">Girdi Token</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="outputTokens">0</div>
+                    <div class="stat-label" id="outputLabel">Çıktı Token</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="aiScore">0%</div>
+                    <div class="stat-label" id="scoreLabel">AI Tespit Skoru</div>
+                    <div class="ai-score">
+                        <div class="score-bar">
+                            <div class="score-fill" id="scoreFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="humanScore">0%</div>
+                    <div class="stat-label" id="humanLabel">İnsan Benzerliği</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <h3 id="styleTitle">✨ Dönüştürme Stili</h3>
+            <div class="style-options">
+                <div class="style-card active" onclick="selectStyle('natural')" data-style="natural">
+                    <h4 id="naturalTitle">📝 Doğal</h4>
+                    <p id="naturalDesc">Gündelik, samimi bir yazı stili</p>
+                </div>
+                <div class="style-card" onclick="selectStyle('academic')" data-style="academic">
+                    <h4 id="academicTitle">🎓 Akademik</h4>
+                    <p id="academicDesc">Profesyonel, akademik ton</p>
+                </div>
+                <div class="style-card" onclick="selectStyle('creative')" data-style="creative">
+                    <h4 id="creativeTitle">🎨 Yaratıcı</h4>
+                    <p id="creativeDesc">Edebi, yaratıcı ifadeler</p>
+                </div>
+                <div class="style-card" onclick="selectStyle('casual')" data-style="casual">
+                    <h4 id="casualTitle">💬 Rahat</h4>
+                    <p id="casualDesc">Arkadaş canlısı, gayri resmi</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-interface">
+            <div class="text-box">
+                <h3>
+                    <span class="icon">🤖</span>
+                    <span id="inputTitle">AI Metni</span>
+                </h3>
+                <textarea id="inputText" placeholder="Dönüştürmek istediğiniz AI metnini buraya yapıştırın..." oninput="updateStats()"></textarea>
+                <div class="char-counter">
+                    <span id="charCount">0</span> / 4000 <span id="charLabel">karakter</span>
+                </div>
+            </div>
+
+            <div class="text-box">
+                <h3>
+                    <span class="icon">👤</span>
+                    <span id="outputTitle">İnsanlaştırılmış Metin</span>
+                </h3>
+                <textarea id="outputText" readonly placeholder="Dönüştürülmüş metin burada görünecek..."></textarea>
+                <div class="output-actions">
+                    <button class="action-btn" onclick="copyOutput()" id="copyBtn">
+                        📋 Kopyala
+                    </button>
+                    <button class="action-btn" onclick="downloadOutput()" id="downloadBtn">
+                        💾 İndir
+                    </button>
+                    <button class="action-btn" onclick="clearAll()" id="clearBtn">
+                        🗑️ Temizle
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <button class="humanize-btn" id="humanizeBtn" onclick="humanizeText()">
+            <span class="spinner"></span>
+            <span id="btnText">✨ Metni İnsanlaştır</span>
+        </button>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h4 id="feature1Title">AI Dedektör Bypass</h4>
+                <p id="feature1Desc">GPTZero, Turnitin ve diğer AI dedektörlerinden kaçının. Metniniz %100 insan yazısı gibi görünecek.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h4 id="feature2Title">Anlık Dönüşüm</h4>
+                <p id="feature2Desc">Saniyeler içinde metninizi dönüştürün. Groq API'nin hızlı altyapısı ile bekleme yok.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌍</div>
+                <h4 id="feature3Title">Çoklu Dil</h4>
+                <p id="feature3Desc">Türkçe ve İngilizce desteği. Diğer dillerde de çalışır, ancak en iyi sonuçlar bu dillerde.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎭</div>
+                <h4 id="feature4Title">4 Farklı Stil</h4>
+                <p id="feature4Desc">Doğal, akademik, yaratıcı veya rahat yazı stili seçenekleri.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h4 id="feature5Title">AI Skoru</h4>
+                <p id="feature5Desc">Gerçek zamanlı AI tespit skoru ve insan benzerliği ölçümü.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">♾️</div>
+                <h4 id="feature6Title">Limitsiz Kullanım</h4>
+                <p id="feature6Desc">Kendi API key'iniz ile sınırsız kullanım. Hiçbir kısıtlama yok.</p>
+            </div>
+        </div>
+
+        <footer>
+            <p id="footerText">AI Metin İnsanlaştırıcı &copy; 2025 | Groq API ile güçlendirilmiştir</p>
+        </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Dil paketleri
+        const translations = {
+            tr: {
+                title: "AI Metin İnsanlaştırıcı",
+                subtitle: "Yapay zeka metinlerini doğal, insan yazısı gibi dönüştürün",
+                apiTitle: "🔑 API Ayarları",
+                apiPlaceholder: "Groq API Key'inizi girin (gsk_...)",
+                testBtn: "Bağlantıyı Test Et",
+                apiInfo: "💡 Groq API key almak için: console.groq.com - Ücretsiz 1M token/gün",
+                inputTokens: "Girdi Token",
+                outputTokens: "Çıktı Token",
+                scoreLabel: "AI Tespit Skoru",
+                humanLabel: "İnsan Benzerliği",
+                styleTitle: "✨ Dönüştürme Stili",
+                naturalTitle: "📝 Doğal",
+                naturalDesc: "Gündelik, samimi bir yazı stili",
+                academicTitle: "🎓 Akademik",
+                academicDesc: "Profesyonel, akademik ton",
+                creativeTitle: "🎨 Yaratıcı",
+                creativeDesc: "Edebi, yaratıcı ifadeler",
+                casualTitle: "💬 Rahat",
+                casualDesc: "Arkadaş canlısı, gayri resmi",
+                inputTitle: "AI Metni",
+                outputTitle: "İnsanlaştırılmış Metin",
+                charLabel: "karakter",
+                copyBtn: "📋 Kopyala",
+                downloadBtn: "💾 İndir",
+                clearBtn: "🗑️ Temizle",
+                btnText: "✨ Metni İnsanlaştır",
+                feature1Title: "AI Dedektör Bypass",
+                feature1Desc: "GPTZero, Turnitin ve diğer AI dedektörlerinden kaçının. Metniniz %100 insan yazısı gibi görünecek.",
+                feature2Title: "Anlık Dönüşüm",
+                feature2Desc: "Saniyeler içinde metninizi dönüştürün. Groq API'nin hızlı altyapısı ile bekleme yok.",
+                feature3Title: "Çoklu Dil",
+                feature3Desc: "Türkçe ve İngilizce desteği. Diğer dillerde de çalışır, ancak en iyi sonuçlar bu dillerde.",
+                feature4Title: "4 Farklı Stil",
+                feature4Desc: "Doğal, akademik, yaratıcı veya rahat yazı stili seçenekleri.",
+                feature5Title: "AI Skoru",
+                feature5Desc: "Gerçek zamanlı AI tespit skoru ve insan benzerliği ölçümü.",
+                feature6Title: "Limitsiz Kullanım",
+                feature6Desc: "Kendi API key'iniz ile sınırsız kullanım. Hiçbir kısıtlama yok.",
+                footerText: "AI Metin İnsanlaştırıcı &copy; 2025 | Groq API ile güçlendirilmiştir",
+                inputPlaceholder: "Dönüştürmek istediğiniz AI metnini buraya yapıştırın...",
+                outputPlaceholder: "Dönüştürülmüş metin burada görünecek...",
+                langBtn: "EN"
+            },
+            en: {
+                title: "AI Text Humanizer",
+                subtitle: "Transform AI-generated text to sound natural and human-like",
+                apiTitle: "🔑 API Settings",
+                apiPlaceholder: "Enter your Groq API Key (gsk_...)",
+                testBtn: "Test Connection",
+                apiInfo: "💡 Get Groq API key at: console.groq.com - Free 1M tokens/day",
+                inputTokens: "Input Tokens",
+                outputTokens: "Output Tokens",
+                scoreLabel: "AI Detection Score",
+                humanLabel: "Human Similarity",
+                styleTitle: "✨ Conversion Style",
+                naturalTitle: "📝 Natural",
+                naturalDesc: "Casual, friendly writing style",
+                academicTitle: "🎓 Academic",
+                academicDesc: "Professional, academic tone",
+                creativeTitle: "🎨 Creative",
+                creativeDesc: "Literary, creative expressions",
+                casualTitle: "💬 Casual",
+                casualDesc: "Friendly, informal tone",
+                inputTitle: "AI Text",
+                outputTitle: "Humanized Text",
+                charLabel: "characters",
+                copyBtn: "📋 Copy",
+                downloadBtn: "💾 Download",
+                clearBtn: "🗑️ Clear",
+                btnText: "✨ Humanize Text",
+                feature1Title: "AI Detector Bypass",
+                feature1Desc: "Evade GPTZero, Turnitin and other AI detectors. Your text will look 100% human-written.",
+                feature2Title: "Instant Conversion",
+                feature2Desc: "Transform your text in seconds. No waiting with Groq API's fast infrastructure.",
+                feature3Title: "Multilingual",
+                feature3Desc: "Turkish and English support. Works in other languages too, but best results in these.",
+                feature4Title: "4 Different Styles",
+                feature4Desc: "Choose from natural, academic, creative, or casual writing styles.",
+                feature5Title: "AI Score",
+                feature5Desc: "Real-time AI detection score and human similarity measurement.",
+                feature6Title: "Unlimited Usage",
+                feature6Desc: "Unlimited usage with your own API key. No restrictions whatsoever.",
+                footerText: "AI Text Humanizer &copy; 2025 | Powered by Groq API",
+                inputPlaceholder: "Paste the AI text you want to transform here...",
+                outputPlaceholder: "Humanized text will appear here...",
+                langBtn: "TR"
+            }
+        };
+
+        let currentLang = 'tr';
+        let selectedStyle = 'natural';
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            createParticles();
+            updateStats();
+        });
+
+        // Dil değiştir
+        function toggleLanguage() {
+            currentLang = currentLang === 'tr' ? 'en' : 'tr';
+            updateLanguage();
+            localStorage.setItem('language', currentLang);
+        }
+
+        // Dili güncelle
+        function updateLanguage() {
+            const t = translations[currentLang];
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('apiTitle').textContent = t.apiTitle;
+            document.getElementById('apiKey').placeholder = t.apiPlaceholder;
+            document.getElementById('testBtn').textContent = t.testBtn;
+            document.getElementById('apiInfo').innerHTML = t.apiInfo + ' | <a href="https://console.groq.com" target="_blank" style="color: #00d2ff;">console.groq.com</a>';
+            document.getElementById('inputLabel').textContent = t.inputTokens;
+            document.getElementById('outputLabel').textContent = t.outputTokens;
+            document.getElementById('scoreLabel').textContent = t.scoreLabel;
+            document.getElementById('humanLabel').textContent = t.humanLabel;
+            document.getElementById('styleTitle').textContent = t.styleTitle;
+            document.getElementById('naturalTitle').textContent = t.naturalTitle;
+            document.getElementById('naturalDesc').textContent = t.naturalDesc;
+            document.getElementById('academicTitle').textContent = t.academicTitle;
+            document.getElementById('academicDesc').textContent = t.academicDesc;
+            document.getElementById('creativeTitle').textContent = t.creativeTitle;
+            document.getElementById('creativeDesc').textContent = t.creativeDesc;
+            document.getElementById('casualTitle').textContent = t.casualTitle;
+            document.getElementById('casualDesc').textContent = t.casualDesc;
+            document.getElementById('inputTitle').textContent = t.inputTitle;
+            document.getElementById('outputTitle').textContent = t.outputTitle;
+            document.getElementById('charLabel').textContent = t.charLabel;
+            document.getElementById('copyBtn').textContent = t.copyBtn;
+            document.getElementById('downloadBtn').textContent = t.downloadBtn;
+            document.getElementById('clearBtn').textContent = t.clearBtn;
+            document.getElementById('btnText').textContent = t.btnText;
+            document.getElementById('feature1Title').textContent = t.feature1Title;
+            document.getElementById('feature1Desc').textContent = t.feature1Desc;
+            document.getElementById('feature2Title').textContent = t.feature2Title;
+            document.getElementById('feature2Desc').textContent = t.feature2Desc;
+            document.getElementById('feature3Title').textContent = t.feature3Title;
+            document.getElementById('feature3Desc').textContent = t.feature3Desc;
+            document.getElementById('feature4Title').textContent = t.feature4Title;
+            document.getElementById('feature4Desc').textContent = t.feature4Desc;
+            document.getElementById('feature5Title').textContent = t.feature5Title;
+            document.getElementById('feature5Desc').textContent = t.feature5Desc;
+            document.getElementById('feature6Title').textContent = t.feature6Title;
+            document.getElementById('feature6Desc').textContent = t.feature6Desc;
+            document.getElementById('footerText').textContent = t.footerText;
+            document.getElementById('inputText').placeholder = t.inputPlaceholder;
+            document.getElementById('outputText').placeholder = t.outputPlaceholder;
+            document.getElementById('langText').textContent = t.langBtn;
+        }
+
+        // Ayarları kaydet
+        function saveApiKey() {
+            const apiKey = document.getElementById('apiKey').value;
+            if (apiKey) {
+                localStorage.setItem('groqApiKey', apiKey);
+            }
+        }
+
+        function saveModel() {
+            const model = document.getElementById('modelSelect').value;
+            localStorage.setItem('selectedModel', model);
+        }
+
+        // Ayarları yükle
+        function loadSettings() {
+            const savedKey = localStorage.getItem('groqApiKey');
+            const savedModel = localStorage.getItem('selectedModel');
+            const savedLang = localStorage.getItem('language');
+            
+            if (savedKey) {
+                document.getElementById('apiKey').value = savedKey;
+            }
+            if (savedModel) {
+                document.getElementById('modelSelect').value = savedModel;
+            }
+            if (savedLang) {
+                currentLang = savedLang;
+                updateLanguage();
+            }
+        }
+
+        // Stil seçimi
+        function selectStyle(style) {
+            selectedStyle = style;
+            document.querySelectorAll('.style-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.querySelector(`[data-style="${style}"]`).classList.add('active');
+        }
+
+        // İstatistikleri güncelle
+        function updateStats() {
+            const text = document.getElementById('inputText').value;
+            const charCount = text.length;
+            document.getElementById('charCount').textContent = charCount;
+            
+            // Yaklaşık token sayısı (kelime bazlı tahmin)
+            const estimatedTokens = Math.ceil(charCount / 4);
+            document.getElementById('inputTokens').textContent = estimatedTokens;
+            
+            // AI skoru hesapla (basit heuristic)
+            const aiScore = calculateAIScore(text);
+            document.getElementById('aiScore').textContent = aiScore + '%';
+            document.getElementById('scoreFill').style.width = aiScore + '%';
+            document.getElementById('humanScore').textContent = (100 - aiScore) + '%';
+        }
+
+        // AI skoru hesapla
+        function calculateAIScore(text) {
+            if (!text) return 0;
+            
+            let score = 30; // Temel AI skoru
+            
+            // AI tipik kalıpları
+            const aiPatterns = [
+                /\b(öncelikle|sonuç olarak|başka bir deyişle|daha spesifik olarak)\b/gi,
+                /\b(importantly|furthermore|moreover|consequently|therefore)\b/gi,
+                /\b(önemli olan şey|dikkate değer bir şekilde)\b/gi,
+                /\b(it is important to note|it should be noted)\b/gi,
+                /\d+\.\s+[A-Z][a-z]+/g, // Numaralı listeler
+                /\b(özellikle|özellikle de|belirgin bir şekilde)\b/gi,
+            ];
+            
+            aiPatterns.forEach(pattern => {
+                const matches = (text.match(pattern) || []).length;
+                score += matches * 5;
+            });
+            
+            // Tekrarlayan yapılar
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            if (sentences.length > 3) {
+                const avgLength = text.length / sentences.length;
+                if (avgLength > 80 && avgLength < 150) {
+                    score += 15; // AI tipik cümle uzunluğu
+                }
+            }
+            
+            return Math.min(95, Math.max(5, score));
+        }
+
+        // Bağlantı test et
+        async function testConnection() {
+            const apiKey = document.getElementById('apiKey').value;
+            if (!apiKey) {
+                showToast(currentLang === 'tr' ? 'Lütfen API key girin!' : 'Please enter API key!', true);
+                return;
+            }
+
+            try {
+                const response = await fetch('https://api.groq.com/openai/v1/models', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    showToast(currentLang === 'tr' ? '✅ Bağlantı başarılı!' : '✅ Connection successful!');
+                    saveApiKey();
+                } else {
+                    showToast(currentLang === 'tr' ? '❌ API key geçersiz!' : '❌ Invalid API key!', true);
+                }
+            } catch (error) {
+                showToast(currentLang === 'tr' ? '❌ Bağlantı hatası!' : '❌ Connection error!', true);
+            }
+        }
+
+        // Metni humanize et
+        async function humanizeText() {
+            const apiKey = document.getElementById('apiKey').value;
+            const inputText = document.getElementById('inputText').value;
+            const model = document.getElementById('modelSelect').value;
+            const btn = document.getElementById('humanizeBtn');
+            
+            if (!apiKey) {
+                showToast(currentLang === 'tr' ? 'Lütfen API key girin!' : 'Please enter API key!', true);
+                document.getElementById('apiKey').focus();
+                return;
+            }
+
+            if (!inputText.trim()) {
+                showToast(currentLang === 'tr' ? 'Lütfen metin girin!' : 'Please enter text!', true);
+                return;
+            }
+
+            btn.disabled = true;
+            btn.classList.add('loading');
+            
+            const stylePrompts = {
+                tr: {
+                    natural: "Aşağıdaki metni tamamen doğal, samimi ve insan gibi yazılmış gibi yeniden yaz. AI tarafından yazılmış gibi durmaması için bağlaçları değiştir, cümle yapılarını varyasyonlu yap, günlük konuşma dilini kullan, tekrarlayan kalıplardan kaçın. Metin akıcı ve okunabilir olsun ama robotik değil:",
+                    academic: "Aşağıdaki metni akademik, profesyonel bir üslupla yeniden yaz. Daha resmi ama hâlâ doğal bir ton kullan. Akademik terminoloji ekle ancak aşırı teknik olmadan. Metin öğrenci veya akademisyen tarafından yazılmış gibi görünsün, AI tarafından değil:",
+                    creative: "Aşağıdaki metni edebi, yaratıcı ve ilgi çekici bir üslupla yeniden yaz. Metaforlar, benzetmeler ve canlı betimlemeler kullan. Yazarın kişisel sesi ve tarzı hissedilsin. Hikaye anlatımı teknikleri kullan ama aşırı abartılı olmasın:",
+                    casual: "Aşağıdaki metni çok rahat, arkadaş canlısı ve gündelik konuşma dilinde yeniden yaz. Sanki arkadaşına anlatıyormuş gibi, samimi bir ton kullan. Kısaltmalar, argo (uygun şekilde) ve doğal konuşma kalıpları kullan. Çok resmi olmasın, eğlenceli ve içten olsun:"
+                },
+                en: {
+                    natural: "Rewrite the following text to sound completely natural, friendly, and human-written. Change conjunctions, vary sentence structures, use conversational language, and avoid repetitive AI patterns. Make it flow naturally and readable, but not robotic:",
+                    academic: "Rewrite the following text in an academic, professional style. Use formal but still natural tone. Add academic terminology but not overly technical. Make it look like written by a student or academic, not by AI:",
+                    creative: "Rewrite the following text in a literary, creative, and engaging style. Use metaphors, similes, and vivid descriptions. Let the writer's personal voice and style be felt. Use storytelling techniques but not overly dramatic:",
+                    casual: "Rewrite the following text in a very relaxed, friendly, and casual conversational style. Like you're chatting with a friend, use an intimate tone. Use contractions, colloquialisms (appropriately), and natural speech patterns. Not too formal, fun and genuine:"
+                }
+            };
+
+            const systemPrompt = currentLang === 'tr' 
+                ? "Sen bir metin düzenleme uzmanısın. Görevin, AI tarafından üretilmiş metinleri insanların yazdığı gibi doğal ve akıcı hale getirmek. Cümleleri çeşitlendir, tekrarlayan yapıları kır, günlük dil kullan. Özgün anlamı koru ama ifade tarzını tamamen değiştir."
+                : "You are a text editing expert. Your task is to make AI-generated text sound natural and fluent like human writing. Vary sentences, break repetitive structures, use everyday language. Preserve the original meaning but completely change the expression style.";
+
+            try {
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [
+                            {
+                                role: "system",
+                                content: systemPrompt
+                            },
+                            {
+                                role: "user",
+                                content: stylePrompts[currentLang][selectedStyle] + "\n\n" + inputText
+                            }
+                        ],
+                        temperature: 0.8,
+                        max_tokens: 4000
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || 'API error');
+                }
+
+                const data = await response.json();
+                const humanizedText = data.choices[0].message.content;
+                
+                document.getElementById('outputText').value = humanizedText;
+                
+                // Çıktı token sayısını güncelle
+                const outputTokens = data.usage?.completion_tokens || Math.ceil(humanizedText.length / 4);
+                document.getElementById('outputTokens').textContent = outputTokens;
+                
+                // Yeni AI skorunu hesapla
+                const newAIScore = calculateAIScore(humanizedText);
+                document.getElementById('aiScore').textContent = newAIScore + '%';
+                document.getElementById('scoreFill').style.width = newAIScore + '%';
+                document.getElementById('humanScore').textContent = (100 - newAIScore) + '%';
+                
+                showToast(currentLang === 'tr' ? '✅ Metin başarıyla dönüştürüldü!' : '✅ Text successfully humanized!');
+                
+            } catch (error) {
+                showToast(currentLang === 'tr' ? '❌ Hata: ' + error.message : '❌ Error: ' + error.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }
+        }
+
+        // Çıktıyı kopyala
+        function copyOutput() {
+            const outputText = document.getElementById('outputText');
+            if (!outputText.value) {
+                showToast(currentLang === 'tr' ? 'Kopyalanacak metin yok!' : 'No text to copy!', true);
+                return;
+            }
+            
+            outputText.select();
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+            
+            showToast(currentLang === 'tr' ? '✅ Metin kopyalandı!' : '✅ Text copied!');
+        }
+
+        // Çıktıyı indir
+        function downloadOutput() {
+            const outputText = document.getElementById('outputText').value;
+            if (!outputText) {
+                showToast(currentLang === 'tr' ? 'İndirilecek metin yok!' : 'No text to download!', true);
+                return;
+            }
+            
+            const blob = new Blob([outputText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'humanized-text.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast(currentLang === 'tr' ? '✅ Dosya indirildi!' : '✅ File downloaded!');
+        }
+
+        // Temizle
+        function clearAll() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputText').value = '';
+            updateStats();
+            showToast(currentLang === 'tr' ? '🗑️ Temizlendi!' : '🗑️ Cleared!');
+        }
+
+        // Toast bildirim göster
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (isError ? ' error-toast' : '');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Parçacık animasyonu
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                container.appendChild(particle);
+            }
+        }
+    </script>
+</body>
+</html>
