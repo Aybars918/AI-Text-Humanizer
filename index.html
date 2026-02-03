@@ -47,6 +47,26 @@
             font-size: 1.1rem;
         }
 
+        .developer-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #fff;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .developer-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
         .lang-toggle {
             position: absolute;
             top: 20px;
@@ -620,6 +640,9 @@
     
     <div class="container">
         <header>
+            <a href="https://github.com/Aybars918" target="_blank" class="developer-link" id="devLink">
+                💻 Aybars918
+            </a>
             <button class="lang-toggle" onclick="toggleLanguage()" id="langBtn">
                 <span id="langText">EN</span>
             </button>
@@ -779,6 +802,11 @@
 
         <footer>
             <p id="footerText">AI Metin İnsanlaştırıcı &copy; 2025 | Groq API ile güçlendirilmiştir</p>
+            <p style="margin-top: 10px; font-size: 0.85rem; color: #888;">
+                <a href="https://github.com/Aybars918" target="_blank" style="color: #00d2ff; text-decoration: none;">
+                    💻 Created by Aybars918 on GitHub
+                </a>
+            </p>
         </footer>
     </div>
 

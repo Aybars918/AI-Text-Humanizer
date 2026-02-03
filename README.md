@@ -122,4 +122,6 @@ Bu kişisel proje olduğu için pull request kabul edilmemektedir.
 
 ---
 
+**Developer / Geliştirici**: [Aybars918](https://github.com/Aybars918) - GitHub
+
 **Note / Not**: This tool is for educational and personal use only. Please use in accordance with academic integrity guidelines. / Bu araç sadece eğitim ve kişisel kullanım amaçlıdır. Lütfen akademik dürüstlük kurallarına uygun kullanın.
