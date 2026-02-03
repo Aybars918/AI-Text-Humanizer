@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Metin İnsanlaştırıcı | Humanize.im Alternatifi</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -404,6 +406,152 @@
             margin-top: 40px;
         }
 
+        .download-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .download-menu {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(48, 43, 99, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            margin-bottom: 5px;
+            overflow: hidden;
+            z-index: 100;
+        }
+
+        .download-menu.show {
+            display: block;
+        }
+
+        .download-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            border: none;
+            background: transparent;
+            color: #fff;
+            width: 100%;
+            text-align: left;
+        }
+
+        .download-option:hover {
+            background: rgba(0, 210, 255, 0.3);
+        }
+
+        .history-panel {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: rgba(48, 43, 99, 0.98);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .history-panel.open {
+            right: 0;
+        }
+
+        .history-toggle {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            background: rgba(0, 210, 255, 0.9);
+            color: #000;
+            border: none;
+            padding: 15px 10px;
+            border-radius: 8px 0 0 8px;
+            cursor: pointer;
+            font-weight: 600;
+            z-index: 999;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transition: right 0.3s ease;
+        }
+
+        .history-toggle.open {
+            right: 350px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .history-header h3 {
+            color: #00d2ff;
+            margin: 0;
+        }
+
+        .clear-history {
+            background: rgba(255, 68, 68, 0.3);
+            border: 1px solid rgba(255, 68, 68, 0.5);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            border-color: #00d2ff;
+            transform: translateX(-5px);
+        }
+
+        .history-date {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .history-style {
+            font-size: 0.8rem;
+            color: #00d2ff;
+            margin-bottom: 5px;
+        }
+
+        .history-preview {
+            font-size: 0.85rem;
+            color: #aaa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .empty-history {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
         .toast {
             position: fixed;
             bottom: 30px;
@@ -565,9 +713,25 @@
                     <button class="action-btn" onclick="copyOutput()" id="copyBtn">
                         📋 Kopyala
                     </button>
-                    <button class="action-btn" onclick="downloadOutput()" id="downloadBtn">
-                        💾 İndir
-                    </button>
+                    <div class="download-dropdown" style="flex: 1;">
+                        <button class="action-btn" onclick="toggleDownloadMenu()" id="downloadBtn" style="width: 100%;">
+                            💾 İndir ▼
+                        </button>
+                        <div class="download-menu" id="downloadMenu">
+                            <button class="download-option" onclick="downloadAsTXT()">
+                                📄 TXT - Düz Metin
+                            </button>
+                            <button class="download-option" onclick="downloadAsMD()">
+                                📝 MD - Markdown
+                            </button>
+                            <button class="download-option" onclick="downloadAsPDF()">
+                                📕 PDF - PDF Belgesi
+                            </button>
+                            <button class="download-option" onclick="downloadAsDOCX()">
+                                📘 DOCX - Word Belgesi
+                            </button>
+                        </div>
+                    </div>
                     <button class="action-btn" onclick="clearAll()" id="clearBtn">
                         🗑️ Temizle
                     </button>
@@ -618,6 +782,20 @@
         </footer>
     </div>
 
+    <button class="history-toggle" id="historyToggle" onclick="toggleHistoryPanel()">
+        <span id="historyToggleText">📜 Geçmiş</span>
+    </button>
+
+    <div class="history-panel" id="historyPanel">
+        <div class="history-header">
+            <h3 id="historyTitle">📜 Dönüşüm Geçmişi</h3>
+            <button class="clear-history" onclick="clearHistory()" id="clearHistoryBtn">Temizle</button>
+        </div>
+        <div id="historyList">
+            <div class="empty-history" id="emptyHistory">Henüz kayıtlı dönüşüm yok</div>
+        </div>
+    </div>
+
     <div class="toast" id="toast"></div>
 
     <script>
@@ -647,7 +825,7 @@
                 outputTitle: "İnsanlaştırılmış Metin",
                 charLabel: "karakter",
                 copyBtn: "📋 Kopyala",
-                downloadBtn: "💾 İndir",
+                downloadBtn: "💾 İndir ▼",
                 clearBtn: "🗑️ Temizle",
                 btnText: "✨ Metni İnsanlaştır",
                 feature1Title: "AI Dedektör Bypass",
@@ -665,7 +843,11 @@
                 footerText: "AI Metin İnsanlaştırıcı &copy; 2025 | Groq API ile güçlendirilmiştir",
                 inputPlaceholder: "Dönüştürmek istediğiniz AI metnini buraya yapıştırın...",
                 outputPlaceholder: "Dönüştürülmüş metin burada görünecek...",
-                langBtn: "EN"
+                langBtn: "EN",
+                historyToggle: "📜 Geçmiş",
+                historyTitle: "📜 Dönüşüm Geçmişi",
+                clearHistoryBtn: "Temizle",
+                emptyHistory: "Henüz kayıtlı dönüşüm yok"
             },
             en: {
                 title: "AI Text Humanizer",
@@ -691,7 +873,7 @@
                 outputTitle: "Humanized Text",
                 charLabel: "characters",
                 copyBtn: "📋 Copy",
-                downloadBtn: "💾 Download",
+                downloadBtn: "💾 Download ▼",
                 clearBtn: "🗑️ Clear",
                 btnText: "✨ Humanize Text",
                 feature1Title: "AI Detector Bypass",
@@ -709,7 +891,11 @@
                 footerText: "AI Text Humanizer &copy; 2025 | Powered by Groq API",
                 inputPlaceholder: "Paste the AI text you want to transform here...",
                 outputPlaceholder: "Humanized text will appear here...",
-                langBtn: "TR"
+                langBtn: "TR",
+                historyToggle: "📜 History",
+                historyTitle: "📜 Conversion History",
+                clearHistoryBtn: "Clear",
+                emptyHistory: "No saved conversions yet"
             }
         };
 
@@ -775,6 +961,10 @@
             document.getElementById('inputText').placeholder = t.inputPlaceholder;
             document.getElementById('outputText').placeholder = t.outputPlaceholder;
             document.getElementById('langText').textContent = t.langBtn;
+            document.getElementById('historyToggleText').textContent = t.historyToggle;
+            document.getElementById('historyTitle').textContent = t.historyTitle;
+            document.getElementById('clearHistoryBtn').textContent = t.clearHistoryBtn;
+            document.getElementById('emptyHistory').textContent = t.emptyHistory;
         }
 
         // Ayarları kaydet
@@ -981,6 +1171,9 @@
                 
                 showToast(currentLang === 'tr' ? '✅ Metin başarıyla dönüştürüldü!' : '✅ Text successfully humanized!');
                 
+                // Geçmişe kaydet
+                saveToHistory(inputText, humanizedText, selectedStyle);
+                
             } catch (error) {
                 showToast(currentLang === 'tr' ? '❌ Hata: ' + error.message : '❌ Error: ' + error.message, true);
             } finally {
@@ -1004,25 +1197,291 @@
             showToast(currentLang === 'tr' ? '✅ Metin kopyalandı!' : '✅ Text copied!');
         }
 
-        // Çıktıyı indir
-        function downloadOutput() {
+        // Download menüsünü aç/kapat
+        function toggleDownloadMenu() {
+            const menu = document.getElementById('downloadMenu');
+            menu.classList.toggle('show');
+        }
+
+        // Menü dışına tıklandığında kapat
+        document.addEventListener('click', function(e) {
+            const dropdown = document.querySelector('.download-dropdown');
+            if (!dropdown.contains(e.target)) {
+                document.getElementById('downloadMenu').classList.remove('show');
+            }
+        });
+
+        // TXT olarak indir
+        function downloadAsTXT() {
             const outputText = document.getElementById('outputText').value;
             if (!outputText) {
                 showToast(currentLang === 'tr' ? 'İndirilecek metin yok!' : 'No text to download!', true);
                 return;
             }
             
-            const blob = new Blob([outputText], { type: 'text/plain' });
+            const blob = new Blob([outputText], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'humanized-text.txt';
+            a.download = `humanized-${new Date().toISOString().slice(0,10)}.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            document.getElementById('downloadMenu').classList.remove('show');
+            showToast(currentLang === 'tr' ? '✅ TXT indirildi!' : '✅ TXT downloaded!');
+        }
+
+        // Markdown olarak indir
+        function downloadAsMD() {
+            const outputText = document.getElementById('outputText').value;
+            if (!outputText) {
+                showToast(currentLang === 'tr' ? 'İndirilecek metin yok!' : 'No text to download!', true);
+                return;
+            }
             
-            showToast(currentLang === 'tr' ? '✅ Dosya indirildi!' : '✅ File downloaded!');
+            const date = new Date().toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US');
+            const mdContent = `# ${currentLang === 'tr' ? 'İnsanlaştırılmış Metin' : 'Humanized Text'}
+
+${currentLang === 'tr' ? '**Oluşturulma Tarihi:**' : '**Created Date:**'} ${date}
+${currentLang === 'tr' ? '**Stil:**' : '**Style:**'} ${selectedStyle}
+
+---
+
+${outputText}
+
+---
+
+*${currentLang === 'tr' ? 'AI Metin İnsanlaştırıcı ile oluşturulmuştur' : 'Generated with AI Text Humanizer'}*`;
+            
+            const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `humanized-${new Date().toISOString().slice(0,10)}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            document.getElementById('downloadMenu').classList.remove('show');
+            showToast(currentLang === 'tr' ? '✅ Markdown indirildi!' : '✅ Markdown downloaded!');
+        }
+
+        // PDF olarak indir
+        function downloadAsPDF() {
+            const outputText = document.getElementById('outputText').value;
+            if (!outputText) {
+                showToast(currentLang === 'tr' ? 'İndirilecek metin yok!' : 'No text to download!', true);
+                return;
+            }
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFontSize(16);
+                doc.text(currentLang === 'tr' ? 'İnsanlaştırılmış Metin' : 'Humanized Text', 20, 20);
+                
+                doc.setFontSize(10);
+                const date = new Date().toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US');
+                doc.text(`${currentLang === 'tr' ? 'Tarih:' : 'Date:'} ${date}`, 20, 30);
+                doc.text(`${currentLang === 'tr' ? 'Stil:' : 'Style:'} ${selectedStyle}`, 20, 37);
+                
+                doc.setFontSize(11);
+                const splitText = doc.splitTextToSize(outputText, 170);
+                doc.text(splitText, 20, 50);
+                
+                doc.save(`humanized-${new Date().toISOString().slice(0,10)}.pdf`);
+                document.getElementById('downloadMenu').classList.remove('show');
+                showToast(currentLang === 'tr' ? '✅ PDF indirildi!' : '✅ PDF downloaded!');
+            } catch (error) {
+                showToast(currentLang === 'tr' ? '❌ PDF oluşturulurken hata!' : '❌ Error creating PDF!', true);
+            }
+        }
+
+        // DOCX olarak indir
+        async function downloadAsDOCX() {
+            const outputText = document.getElementById('outputText').value;
+            if (!outputText) {
+                showToast(currentLang === 'tr' ? 'İndirilecek metin yok!' : 'No text to download!', true);
+                return;
+            }
+            
+            try {
+                const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = window.docx;
+                
+                const doc = new Document({
+                    sections: [{
+                        properties: {},
+                        children: [
+                            new Paragraph({
+                                text: currentLang === 'tr' ? 'İnsanlaştırılmış Metin' : 'Humanized Text',
+                                heading: HeadingLevel.TITLE,
+                                alignment: AlignmentType.CENTER
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: `${currentLang === 'tr' ? 'Tarih:' : 'Date:'} ${new Date().toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US')}`,
+                                        italics: true
+                                    })
+                                ]
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: `${currentLang === 'tr' ? 'Stil:' : 'Style:'} ${selectedStyle}`,
+                                        italics: true
+                                    })
+                                ]
+                            }),
+                            new Paragraph({
+                                text: '',
+                                spacing: { after: 200 }
+                            }),
+                            ...outputText.split('\n').map(line => 
+                                new Paragraph({
+                                    text: line,
+                                    spacing: { after: 120 }
+                                })
+                            ),
+                            new Paragraph({
+                                text: '',
+                                spacing: { after: 400 }
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: currentLang === 'tr' ? 'AI Metin İnsanlaştırıcı ile oluşturulmuştur' : 'Generated with AI Text Humanizer',
+                                        italics: true,
+                                        size: 18
+                                    })
+                                ],
+                                alignment: AlignmentType.CENTER
+                            })
+                        ]
+                    }]
+                });
+                
+                const blob = await Packer.toBlob(doc);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `humanized-${new Date().toISOString().slice(0,10)}.docx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                document.getElementById('downloadMenu').classList.remove('show');
+                showToast(currentLang === 'tr' ? '✅ DOCX indirildi!' : '✅ DOCX downloaded!');
+            } catch (error) {
+                showToast(currentLang === 'tr' ? '❌ DOCX oluşturulurken hata!' : '❌ Error creating DOCX!', true);
+            }
+        }
+
+        // Geçmiş panelini aç/kapat
+        function toggleHistoryPanel() {
+            const panel = document.getElementById('historyPanel');
+            const toggle = document.getElementById('historyToggle');
+            panel.classList.toggle('open');
+            toggle.classList.toggle('open');
+            
+            if (panel.classList.contains('open')) {
+                loadHistory();
+            }
+        }
+
+        // Geçmişe kaydet
+        function saveToHistory(input, output, style) {
+            const history = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
+            const styleNames = {
+                natural: currentLang === 'tr' ? 'Doğal' : 'Natural',
+                academic: currentLang === 'tr' ? 'Akademik' : 'Academic',
+                creative: currentLang === 'tr' ? 'Yaratıcı' : 'Creative',
+                casual: currentLang === 'tr' ? 'Rahat' : 'Casual'
+            };
+            
+            const newItem = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                input: input.substring(0, 100) + (input.length > 100 ? '...' : ''),
+                fullInput: input,
+                output: output,
+                style: styleNames[style] || style,
+                styleKey: style
+            };
+            
+            history.unshift(newItem);
+            
+            // Sadece son 15 kaydı tut
+            if (history.length > 15) {
+                history.pop();
+            }
+            
+            localStorage.setItem('conversionHistory', JSON.stringify(history));
+            
+            // Eğer panel açıksa, listeyi güncelle
+            if (document.getElementById('historyPanel').classList.contains('open')) {
+                loadHistory();
+            }
+        }
+
+        // Geçmişi yükle ve göster
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
+            const listContainer = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                listContainer.innerHTML = `<div class="empty-history">${currentLang === 'tr' ? 'Henüz kayıtlı dönüşüm yok' : 'No saved conversions yet'}</div>`;
+                return;
+            }
+            
+            listContainer.innerHTML = history.map(item => {
+                const date = new Date(item.date);
+                const dateStr = date.toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', {
+                    day: '2-digit',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                return `
+                    <div class="history-item" onclick="restoreHistory(${item.id})">
+                        <div class="history-date">${dateStr}</div>
+                        <div class="history-style">${item.style}</div>
+                        <div class="history-preview">${item.input}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Geçmişten geri yükle
+        function restoreHistory(id) {
+            const history = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
+            const item = history.find(h => h.id === id);
+            
+            if (item) {
+                document.getElementById('inputText').value = item.fullInput;
+                document.getElementById('outputText').value = item.output;
+                
+                // Stili de geri yükle
+                if (item.styleKey) {
+                    selectStyle(item.styleKey);
+                }
+                
+                updateStats();
+                toggleHistoryPanel(); // Paneli kapat
+                showToast(currentLang === 'tr' ? '✅ Geçmişten yüklendi!' : '✅ Loaded from history!');
+            }
+        }
+
+        // Geçmişi temizle
+        function clearHistory() {
+            if (confirm(currentLang === 'tr' ? 'Tüm geçmişi silmek istediğinize emin misiniz?' : 'Are you sure you want to clear all history?')) {
+                localStorage.removeItem('conversionHistory');
+                loadHistory();
+                showToast(currentLang === 'tr' ? '🗑️ Geçmiş temizlendi!' : '🗑️ History cleared!');
+            }
         }
 
         // Temizle
